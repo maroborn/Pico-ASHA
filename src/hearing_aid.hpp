@@ -39,7 +39,8 @@ constexpr uint32_t l2cap_close_stuck_timeout_ticks = 1000;
 // Recreating a CoC after a recovery close needs the aid to answer the LE
 // credit based connection request. Some aids (seen with MED-EL Sonnet 3) never
 // answer it, leaving the aid connected but silent. Fall back to reconnecting
-// the BLE link if the channel is not open within 3 seconds.
+// the BLE link if the channel is not open in time. Audio loop ticks at 1 ms,
+// so this is 3 seconds.
 constexpr uint32_t l2cap_open_stuck_timeout_ticks = 3000;
 
 enum class Side  {Left = 0, Right = 1};
