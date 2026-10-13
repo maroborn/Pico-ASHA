@@ -147,6 +147,7 @@ void HearingAid::process()
                 ev_type = EventType::L2CAPCon;
                 //LOG_INFO("%s: Create L2CAP CoC", ha->get_side_str());
                 ha->set_process_busy();
+                ha->l2cap_open_ticks = 0U;
                 res = l2cap_cbm_create_channel(&HearingAid::handle_l2cap_cbm, 
                                                ha->conn_handle, 
                                                ha->psm, 
@@ -1171,6 +1172,15 @@ bool HearingAid::process_audio()
         if (ha->process_state == ProcessState::CloseL2CAP) {
             if (++ha->l2cap_close_ticks >= l2cap_close_stuck_timeout_ticks) {
                 short_log(ha->conn_id, "%s", "L2CAP close t/o, reconnecting");
+                ha->disconnect();
+            }
+            continue;
+        }
+        // A CoC create that is never answered leaves the aid connected but
+        // silent, with no completion event to retry from. Reconnect instead.
+        if (ha->process_state == (ProcessState::ConnectL2CAP | ProcessState::ProcessBusy)) {
+            if (++ha->l2cap_open_ticks >= l2cap_open_stuck_timeout_ticks) {
+                short_log(ha->conn_id, "%s", "L2CAP open t/o, reconnecting");
                 ha->disconnect();
             }
             continue;
