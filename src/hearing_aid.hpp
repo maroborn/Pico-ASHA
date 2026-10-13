@@ -36,6 +36,12 @@ constexpr uint32_t audio_sdu_gap_timeout_ticks = 500;
 // BLE link rather than leaving the aid without a usable audio transport.
 constexpr uint32_t l2cap_close_stuck_timeout_ticks = 1000;
 
+// Recreating a CoC after a recovery close needs the aid to answer the LE
+// credit based connection request. Some aids (seen with MED-EL Sonnet 3) never
+// answer it, leaving the aid connected but silent. Fall back to reconnecting
+// the BLE link if the channel is not open within 3 seconds.
+constexpr uint32_t l2cap_open_stuck_timeout_ticks = 3000;
+
 enum class Side  {Left = 0, Right = 1};
 enum class Mode  {Mono = 0, Binaural = 1};
 enum class Codec {G722_16, G722_24};
@@ -247,6 +253,7 @@ private:
     uint32_t audio_tx_pending_ticks = 0U;
     uint32_t audio_sdu_gap_ticks = 0U;
     uint32_t l2cap_close_ticks = 0U;
+    uint32_t l2cap_open_ticks = 0U;
 
     bool stop_request_from_other = false;
 
